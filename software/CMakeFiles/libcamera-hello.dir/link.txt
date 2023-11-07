@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic "CMakeFiles/libcamera-hello.dir/libcamera_hello.o" -o libcamera-hello  -llibcamera_dep -llibcamera_app 
