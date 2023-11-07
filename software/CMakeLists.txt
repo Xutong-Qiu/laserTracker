@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
-project(YourProjectName)
+project(laserTracker)
 
 # Find OpenCV package
 find_package(OpenCV REQUIRED)
 
+# Specify the include directory
+include_directories(include)
+
 # Add the executable
-add_executable(test test.cpp background.cpp util.cpp)
+add_executable(test src/test.cpp src/background.cpp src/util.cpp)
 
 # Specify include directories
 target_include_directories(test PRIVATE
