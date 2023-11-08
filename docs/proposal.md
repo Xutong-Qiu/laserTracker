@@ -2,13 +2,13 @@
 
 ## 1. Motivation & Objective
 
-The primary goal of this project is to enable intuitive interaction with digital content on projection screens using laser pointers. Traditional input devices such as a mouse or a touchscreen require physical contact or proximity to the controlling interface. Our approach aims to free the user from these constraints, allowing for remote interaction with digital interfaces, such as controlling a cursor on a screen with a laser pointer using a background subtraction algorithm.
+The primary goal of this project is to enable intuitive interaction with digital content on projection screens using laser pointers. Traditional input devices such as a mouse or a touchscreen require physical contact or proximity to the controlling interface. My approach aims to free the user from these constraints, allowing for remote interaction with digital interfaces, such as controlling a cursor on a screen with a laser pointer.
 
 ## 2. State of the Art & Its Limitations
 
-Currently, interacting with projection screens typically relies on physical touch, such as touchscreens, or conventional pointing devices like mice and trackpads. While these methods are well-established, they often bind the user to a fixed location and surface. Alternative technologies, such as laser pointers equipped with clicking and scrolling capabilities, while freeing the user from these physical constraints, fall short when it comes to providing a full-fledged control system for a computer's cursor. As such, while these devices add convenience in certain contexts, they do not offer a comprehensive solution for interacting with digital content in a manner akin to a mouse.
+Currently, interacting with projection screens typically relies on physical touch, such as touchscreens, or conventional pointing devices like mice and trackpads. While these methods are well-established, they often bind the user to a fixed location and surface. Alternative technologies, such as laser pointers equipped with clicking and scrolling capabilities, while freeing the user from these physical constraints, fall short when it comes to providing a control for a computer's cursor. As such, while these devices add convenience in certain contexts, they do not offer a comprehensive solution for interacting with digital content in a manner akin to a physical mouse.
 
-In addition to these traditional methods, the market has seen the introduction of 'air mice' that employ accelerometers to control the cursor. Despite their innovative approach to cursor control, freeing the user from the need to have a surface to navigate upon, they have not gained widespread popularity. Many users find that these devices are too large for comfortable use, offer limited accuracy, and suffer from reliability issues. This can lead to a frustrating user experience, particularly in precise or high-stakes applications. Furthermore, because they require significant hand movement, they may not be suitable for all users or situations, such as in tight spaces or during presentations where minimal movement is preferred.
+In addition to these traditional methods, the market has seen the introduction of 'air mice' that employ an inertial measurement unit(IMU) to control the cursor. Despite their innovative approach to cursor control, freeing the user from the need to have a surface to navigate upon, they have not gained widespread popularity. Many users find that these devices are too large for comfortable use, offer limited accuracy, and suffer from reliability issues. This can lead to a frustrating user experience, particularly in precise or high-stakes applications. Furthermore, because they require significant hand movement, they may not be suitable for all users or situations, such as during presentations where minimal movement is preferred.
 
 The limitations of these existing technologies present a clear opportunity for innovation. By leveraging advanced computer vision techniques and embedded systems, we can create a more intuitive, accurate, and flexible method of interaction. This would not only enhance the user experience but also extend the contexts in which digital projection interactions can be effectively employed.
 
@@ -22,7 +22,7 @@ The use of the Raspberry Pi for complex computation and the Nano 33 BLE for curs
 
 ## 4. Potential Impact
 
-Technically, the project simplifies the interaction with digital content in educational, professional, and creative settings. Broadly, it democratizes technology by making advanced interaction methods more affordable and accessible, potentially leading to innovative uses in presentations, interactive art installations, and educational settings.
+The project simplifies the interaction between the presenter and digital content in educational, professional, and creative settings. By making advanced interaction methods more affordable and accessible, it allows innovative uses in conference and educational settings.
 
 ## 5. Challenges
 
@@ -31,11 +31,6 @@ The foremost challenge lies in achieving real-time processing speeds to ensure a
 Further complicating the processing speed challenge is the recent obsolescence of the older Raspberry Pi camera libraries such as `raspistill` and `raspivid`. Their lack of support necessitates a transition to the newer `libcamera` library, which, despite being more modern and capable, has scarce resources and community knowledge due to its relative novelty in the field. This project requires pioneering work to develop an understanding and application of `libcamera` for real-time video processing.
 
 In addition, the inherent risks of this project are tied to the hardware limitations of the Raspberry Pi and Nano 33 BLE in processing and communication, which might introduce potential inaccuracies in the laser pointer tracking system. These challenges collectively demand a robust solution that can adapt to varying operational conditions and technological constraints.
-
-
-## 6. Requirements for Success
-
-Key skills include proficiency in C++ for algorithm development, understanding of computer vision, and experience with Raspberry Pi or similar embedded systems. Access to suitable hardware and development tools is also necessary.
 
 ## 6. Requirements for Success
 
