@@ -52,7 +52,7 @@ In addition to the technical skills and hardware, the project demands a problem-
 
 ## 8. Execution Plan
 
-The project will follow a structured approach to development, with the following key tasks laid out in the roadmap:
+The project will follow a structured approach to development, with the following key tasks:
 
 1. **Literature Review and Algorithm Selection:**
    Begin by conducting a thorough investigation into existing research and implementations of laser pointer tracking using computer vision. This will inform the selection of an appropriate tracking algorithm that has been proven effective, which can be further tailored to the specific needs of this project.
@@ -75,32 +75,26 @@ The project will follow a structured approach to development, with the following
 7. **Iteration and Refinement:**
    Based on feedback from system testing, iterate on the design and implementation to refine the user experience. This may involve further optimization of the tracking algorithm or improvements in the BLE communication protocol.
 
-Each of these tasks represents a milestone in the project’s development, requiring a breadth of skills from algorithm development to embedded system communication. Regular reviews will ensure that the project stays on track and that any unforeseen challenges are addressed promptly.
-
-
 ## 9. Related Work
 
 ### 9.a. Papers
 
-- 
+- Zakaria, N. F., Zulkifley, M. A., Mustafa, M. M., & Abdul Karim, R. (2014). A Review on Laser Spot Detection System Based on Image Processing Techniques. Journal of Theoretical and Applied Information Technology, 70(2), 333-342. Retrieved from [https://www.jatit.org/volumes/Vol70No2/18Vol70No2.pdf](https://www.jatit.org/volumes/Vol70No2/18Vol70No2.pdf)
 
-### 9.b. Datasets
-
-- Background subtraction dataset from XYZ lab for algorithm training and testing.
-
-### 9.c. Software
+### 9.b. Software
 
 - libcamera for Pi camera bottom-level API.
 - libcamera-app for Pi camera stream processing.
 - OpenCV for computer vision processing.
-- Raspbian OS for the Raspberry Pi
-- Arduino IDE for Arduino Nano 33 BLE programming
+- Raspbian OS for the Raspberry Pi.
+- Arduino IDE for Arduino Nano 33 BLE programming.
 
 ## 10. References
 
-- \[URL\]
-- \[URL\]
-- \[URL\]
-- "OpenCV Library." OpenCV. \[URL\]
-- "Raspbian OS." Raspberry Pi Foundation. \[URL\]
-
+- "Laser Pointer Tracker." GitHub repository. [https://github.com/sanette/laser](https://github.com/sanette/laser)
+- "Libcamera Library." Libcamera Official Documentation. [https://libcamera.org](https://libcamera.org)
+- "OpenCV Library." Open Source Computer Vision Library. [https://github.com/opencv/opencv](https://github.com/opencv/opencv)
+- "Raspbian OS." Raspberry Pi Foundation. [https://www.raspberrypi.org/software/operating-systems/](https://www.raspberrypi.org/software/operating-systems/)
+- "Arduino USBHID Library." Arduino USB HID Reference. [https://www.arduino.cc/reference/en/libraries/usbhid/](https://www.arduino.cc/reference/en/libraries/usbhid/)
+- "SimpleBLE." Raspberry Pi BLE library. [https://github.com/OpenBluetoothToolbox/SimpleBLE](https://github.com/OpenBluetoothToolbox/SimpleBLE)
+- "ArduinoBLE Library." Arduino BLE Reference. [https://www.arduino.cc/reference/en/libraries/arduinoble/](https://www.arduino.cc/reference/en/libraries/arduinoble/)
