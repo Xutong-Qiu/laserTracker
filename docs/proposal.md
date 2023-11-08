@@ -2,50 +2,59 @@
 
 ## 1. Motivation & Objective
 
-What are you trying to do and why? (plain English without jargon)
+The primary goal of this project is to enable intuitive interaction with digital content on projection screens using laser pointers. Traditional input devices such as a mouse or a touchscreen require physical contact or proximity to the controlling interface. Our approach aims to free the user from these constraints, allowing for remote interaction with digital interfaces, such as controlling a cursor on a screen with a laser pointer using a background subtraction algorithm.
 
 ## 2. State of the Art & Its Limitations
 
-How is it done today, and what are the limits of current practice?
+Current methods for interacting with projection screens often involve physical touch (touchscreens) or traditional pointing devices (mice, trackpads). Infrared and camera-based tracking systems exist but can be costly and complex. These systems often struggle with ambient light interference and require direct line-of-sight, limiting their practicality in everyday use.
 
 ## 3. Novelty & Rationale
 
-What is new in your approach and why do you think it will be successful?
+The novelty of our project lies in utilizing an embedded system, specifically a Raspberry Pi, to process real-time video feeds for background subtraction to identify a laser point's location. The use of an accessible and cost-effective platform like Raspberry Pi makes this technology more accessible. Our confidence in the approach's success stems from advances in computer vision and embedded systems that make real-time processing feasible on such compact hardware.
 
 ## 4. Potential Impact
 
-If the project is successful, what difference will it make, both technically and broadly?
+Technically, the project simplifies the interaction with digital content in educational, professional, and creative settings. Broadly, it democratizes technology by making advanced interaction methods more affordable and accessible, potentially leading to innovative uses in presentations, interactive art installations, and educational settings.
 
 ## 5. Challenges
 
-What are the challenges and risks?
+Challenges include ensuring real-time processing speeds, managing ambient light interference, and calibrating the system for different projection sizes and geometries. Risks involve hardware limitations and potential inaccuracies in pointer tracking.
 
 ## 6. Requirements for Success
 
-What skills and resources are necessary to perform the project?
+Key skills include proficiency in C++ for algorithm development, understanding of computer vision, and experience with Raspberry Pi or similar embedded systems. Access to suitable hardware and development tools is also necessary.
 
 ## 7. Metrics of Success
 
-What are metrics by which you would check for success?
+Success will be measured by the system's responsiveness, accuracy of pointer tracking, and the ability to operate under various lighting conditions and distances.
 
 ## 8. Execution Plan
 
-Describe the key tasks in executing your project, and in case of team project describe how will you partition the tasks.
+The project will be divided into stages: algorithm development, system integration, testing and calibration, and user testing. For a team project, tasks will be divided into algorithm development, hardware setup, integration, and testing phases.
 
 ## 9. Related Work
 
 ### 9.a. Papers
 
-List the key papers that you have identified relating to your project idea, and describe how they related to your project. Provide references (with full citation in the References section below).
+- 
 
 ### 9.b. Datasets
 
-List datasets that you have identified and plan to use. Provide references (with full citation in the References section below).
+- Background subtraction dataset from XYZ lab for algorithm training and testing.
 
 ### 9.c. Software
 
-List softwate that you have identified and plan to use. Provide references (with full citation in the References section below).
+- libcamera for Pi camera bottom-level API.
+- libcamera-app for Pi camera stream processing.
+- OpenCV for computer vision processing.
+- Raspbian OS for the Raspberry Pi
+- Arduino IDE for Arduino Nano 33 BLE programming
 
 ## 10. References
 
-List references correspondign to citations in your text above. For papers please include full citation and URL. For datasets and software include name and URL.
+- \[URL\]
+- \[URL\]
+- \[URL\]
+- "OpenCV Library." OpenCV. \[URL\]
+- "Raspbian OS." Raspberry Pi Foundation. \[URL\]
+
