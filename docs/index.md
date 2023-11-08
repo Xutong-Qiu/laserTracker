@@ -1,12 +1,10 @@
 # Abstract
 
-Provide a brief overview of the project objhectives, approach, and results.
+This project aims to develop a laser pointer tracking system for mouse cursor control on projection screens using a Raspberry Pi and an Arduino Nano 33 BLE. It adapts real-time computer vision algorithms for efficient spot detection and cursor positioning on embedded systems to make a low-cost, intuitive interface that enhances interaction with digital content.
 
 # Team
 
-* Name of team member \#1 
-* Name of team member \#2 (delete this if necessary)
-* Name of team member \#3 (delete this if necessary)
+* Xutong Qiu
 
 # Required Submissions
 
