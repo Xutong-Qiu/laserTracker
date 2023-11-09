@@ -44,6 +44,13 @@ Access to suitable hardware, including the Raspberry Pi, Nano 33 BLE, and a comp
 
 In addition to the technical skills and hardware, the project demands a problem-solving mindset to overcome the anticipated challenges, such as achieving real-time processing speed, managing ambient light interference, and ensuring compatibility with the newer `libcamera` library. The ability to innovate and iterate on the system design, based on testing feedback, will be critical for navigating the uncharted territory of `libcamera` implementation and achieving a successful project outcome.
 
+## 7. Metrics of Success
+
+The project's success will be gauged by several key performance indicators:
+
+- **Responsiveness:** The system must maintain a minimum frame rate of 30 frames per second to ensure smooth cursor movement.
+- **Accuracy:** Tracking accuracy is critical, with the system reliably pinpointing the laser's position to control the cursor effectively.
+- **Reliability:** A stable BLE connection between the Raspberry Pi and the Arduino Nano 33 BLE is essential for consistent performance.
 
 ## 8. Execution Plan
 
