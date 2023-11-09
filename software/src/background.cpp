@@ -37,7 +37,7 @@ void Background::addImg(const cv::Mat& frame) {
     }
 }
 
-void Background::pinpointScreen( cv::Mat& frame){
+void Background::pinpointScreen(cv::Mat& frame){
     if(screen.size()==4){
         return;
     }
@@ -47,7 +47,7 @@ void Background::pinpointScreen( cv::Mat& frame){
         temp_loc = {0,0};
         return;
     }
-    if(loc_count>=60 && distance(temp_loc, {x,y})<=30){
+    if(loc_count>=20 && distance(temp_loc, {x,y})<=30){
         screen.push_back({(temp_loc.first+x)/2, (temp_loc.second+y)/2});
         loc_count = 0;
         temp_loc = {0,0};
@@ -115,8 +115,6 @@ cv::Rect Background::detectScreen(){
         return cv::Rect();
     }
     cv::Mat grayModel, edges, grayModel2, edges2;
-    //cv::cvtColor(model, grayModel, cv::COLOR_BGR2GRAY);
-    //cv::cvtColor(model2, grayModel2, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(model, grayModel, cv::Size(5, 5), 0);
     cv::GaussianBlur(model2, grayModel2, cv::Size(5, 5), 0);
     cv::Canny(grayModel, edges, 50, 150);

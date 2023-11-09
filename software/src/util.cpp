@@ -1,6 +1,7 @@
 #include "background.h"
 #include <opencv4/opencv.hpp>
 #include "util.h"
+#include <algorithm>
 using namespace std;
 using namespace cv;
 
@@ -94,6 +95,6 @@ pair<int,int> oneStepTracker(Background& bg, cv::Mat& img){
         bg.addImg(img);
     }
     return res;
-    
 }
+
 
