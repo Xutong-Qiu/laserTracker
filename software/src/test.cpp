@@ -1,105 +1,18 @@
 #include <opencv4/opencv.hpp>
-
-#include <chrono>
-
 #include <core/libcamera_app.hpp>
 #include <core/options.hpp>
+#include <libcamera/framebuffer.h>
+#include <sys/mman.h>
+#include <chrono>
+#include "background.h"
+#include "util.h"
 
 using namespace std;
 using namespace std::placeholders;
 using namespace cv;
 
-#include <opencv4/opencv.hpp>
-#include <sys/mman.h>
-#include <libcamera/framebuffer.h>
-#include "background.h"
-#include "util.h"
 
-std::pair<double, double> getLaserLocationNormalized(
-    const std::vector<std::pair<int, int>>& screenCorners,
-    const std::pair<int, int>& laserLocation) {
-
-    // Check if the input is valid
-    if (screenCorners.size() != 4) {
-        throw std::invalid_argument("There must be exactly four screen corners provided.");
-    }
-
-    // Convert screen corners to OpenCV points
-    std::vector<cv::Point2f> cvScreenCorners(4);
-    for (size_t i = 0; i < screenCorners.size(); ++i) {
-        cvScreenCorners[i] = cv::Point2f(static_cast<float>(screenCorners[i].first),
-                                         static_cast<float>(screenCorners[i].second));
-    }
-
-    // Define the points in the projector's coordinate system
-    std::vector<cv::Point2f> projectorCorners = {
-        cv::Point2f(0.0f, 0.0f), // Top-left
-        cv::Point2f(1.0f, 0.0f), // Top-right
-        cv::Point2f(1.0f, 1.0f), // Bottom-right
-        cv::Point2f(0.0f, 1.0f)  // Bottom-left
-    };
-
-    // Calculate the perspective transformation matrix
-    cv::Mat transformationMatrix = cv::getPerspectiveTransform(cvScreenCorners, projectorCorners);
-
-    // Convert laser location to OpenCV point
-    cv::Point2f cvLaserLocation(static_cast<float>(laserLocation.first),
-                                static_cast<float>(laserLocation.second));
-
-    // Apply the transformation to the laser point
-    std::vector<cv::Point2f> laserPoints = {cvLaserLocation};
-    std::vector<cv::Point2f> transformedLaserPoints;
-    cv::perspectiveTransform(laserPoints, transformedLaserPoints, transformationMatrix);
-
-    // Return the transformed point as a pair of doubles
-    return {static_cast<double>(transformedLaserPoints[0].x), static_cast<double>(transformedLaserPoints[0].y)};
-}
-
-cv::Mat frameBufferToCvMat(LibcameraApp& app, const libcamera::FrameBuffer &buffer)
-{
-    // Retrieve the planes from the buffer
-    const std::vector<libcamera::FrameBuffer::Plane> &planes = buffer.planes();
-
-	//cout<<"\n\n\n\n\n\n\n\n"<<planes.size()<<"\n\n\n\n\n\n\n\n";
-    if(planes.empty())
-        return cv::Mat();  // Return an empty Mat if no planes are present
-
-    // In real scenarios, you might need to handle multiple planes differently.
-    const libcamera::FrameBuffer::Plane &plane = planes[0];
-    // Get the file descriptor
-    int fileDescriptor = plane.fd.get();  // Using the get() function for SharedFD
-
-    void *data = mmap(NULL, plane.length, PROT_READ, MAP_SHARED, fileDescriptor, plane.offset);
-    if (data == MAP_FAILED) 
-    {
-        return cv::Mat();
-    }
-	unsigned char *byteData = static_cast<unsigned char *>(data);
-	// for (size_t i = 0; i < plane.length && i < 100; ++i) { // Printing first 100 bytes as an example
-	// 	printf("%02x ", byteData[i]);
-	// 	if ((i + 1) % 16 == 0) {
-	// 		printf("\n");
-	// 	}
-	// }
-    cv::Mat image(972, 1296, CV_8UC1, byteData, app.GetStreamInfo(app.VideoStream()).stride); 
-    //cv::Mat image(1296, 972, CV_8UC1, byteData); 
-	cv::Mat frame = image.clone();
-	//cv::imshow("test",image);
-	// for (int i = 0; i < image.rows; ++i) {
-    //     for (int j = 0; j < image.cols; ++j) {
-    //         // Print the pixel value at (i, j)
-    //         std::cout << static_cast<int>(image.at<uchar>(i, j))<<" ";
-            
-    //     }
-	// 	cout<<endl;
-    // }
-	munmap(data, plane.length);
-    return frame;
-}
-
-
-static void event_loop(LibcameraApp &app)
-{
+static void event_loop(LibcameraApp &app){
 	Options const *options = app.GetOptions();
 
 	app.OpenCamera();
