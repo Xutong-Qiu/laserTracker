@@ -27,49 +27,49 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
     auto startTime = std::chrono::high_resolution_clock::now();
 
 
-	for (unsigned int count = 0; ; count++){
-		LibcameraApp::Msg msg = app.Wait();
-        if (msg.type == LibcameraApp::MsgType::Timeout)
-		{
-			LOG_ERROR("ERROR: Device timeout detected, attempting a restart!!!");
-			app.StopCamera();
-			app.StartCamera();
-			continue;
-		}
-		if (msg.type == LibcameraApp::MsgType::Quit)
-			return;
-		else if (msg.type != LibcameraApp::MsgType::RequestComplete)
-			throw std::runtime_error("unrecognised message!");
-		frame_count++;
-        auto now = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
-        if(duration >=std::chrono::seconds(1)){
-            startTime = std::chrono::high_resolution_clock::now();
-            cout<<frame_count<<endl;
-            frame_count=0;
-        }
-		CompletedRequestPtr &completed_request = std::get<CompletedRequestPtr>(msg.payload);
+	// for (unsigned int count = 0; ; count++){
+	// 	LibcameraApp::Msg msg = app.Wait();
+    //     if (msg.type == LibcameraApp::MsgType::Timeout)
+	// 	{
+	// 		LOG_ERROR("ERROR: Device timeout detected, attempting a restart!!!");
+	// 		app.StopCamera();
+	// 		app.StartCamera();
+	// 		continue;
+	// 	}
+	// 	if (msg.type == LibcameraApp::MsgType::Quit)
+	// 		return;
+	// 	else if (msg.type != LibcameraApp::MsgType::RequestComplete)
+	// 		throw std::runtime_error("unrecognised message!");
+	// 	frame_count++;
+    //     auto now = std::chrono::high_resolution_clock::now();
+    //     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
+    //     if(duration >=std::chrono::seconds(1)){
+    //         startTime = std::chrono::high_resolution_clock::now();
+    //         cout<<frame_count<<endl;
+    //         frame_count=0;
+    //     }
+	// 	CompletedRequestPtr &completed_request = std::get<CompletedRequestPtr>(msg.payload);
 
-		libcamera::Request::BufferMap &buffers = completed_request->buffers;
-		const libcamera::FrameBuffer *fb = buffers[app.VideoStream()];
-		cv::Mat frame = frameBufferToCvMat(app, *fb);
-		cv::resize(frame, frame, cv::Size(972,648));
-        if (frame.empty()) {
-            std::cerr << "Error: Blank frame captured." << std::endl;
-            break;
-        }
-        bg.pinpointScreen(frame);
+	// 	libcamera::Request::BufferMap &buffers = completed_request->buffers;
+	// 	const libcamera::FrameBuffer *fb = buffers[app.VideoStream()];
+	// 	cv::Mat frame = frameBufferToCvMat(app, *fb);
+	// 	cv::resize(frame, frame, cv::Size(972,648));
+    //     if (frame.empty()) {
+    //         std::cerr << "Error: Blank frame captured." << std::endl;
+    //         break;
+    //     }
+    //     bg.pinpointScreen(frame);
         
-        cv::imshow("test", frame);
-        if (cv::waitKey(1) == 'q' || bg.screen.size()==4) {
-            break;
-        }
-    }
+    //     cv::imshow("test", frame);
+    //     if (cv::waitKey(1) == 'q' || bg.screen.size()==4) {
+    //         break;
+    //     }
+    // }
 	cout<<"Screen setup completed!"<<endl;
-	// bg.screen.push_back({300,300});
-	// bg.screen.push_back({300,100});
-	// bg.screen.push_back({600,100});
-	// bg.screen.push_back({600,300});
+	bg.screen.push_back({300,600});
+	bg.screen.push_back({300,100});
+	bg.screen.push_back({900,100});
+	bg.screen.push_back({900,600});
 	for (unsigned int count = 0; ; count++)
 	{
 		LibcameraApp::Msg msg = app.Wait();
@@ -118,20 +118,20 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
             cv::circle(frame, cv::Point(s_x, s_y), 8, cv::Scalar(255), 2);
         }
 		auto [norm_x,norm_y] = getLaserLocationNormalized(bg.screen,{x,y});
-		//cv::imshow("test", frame);		
+		cv::imshow("test", frame);		
 		//send loc
 		for(auto& service:nano33->services()){
 			if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
-				cout<<"foundd service!"<<endl;
 				for(auto& charc: service.characteristics()){
-					cout<<charc.uuid()<<endl;
-					nano33->write_request(service.uuid(), charc.uuid(), to_string(norm_x)+ to_string(norm_y));
+					sendLocation(nano33, service, charc, (uint16_t)(norm_x*1000), (uint16_t)(norm_y*1000));
 					break;
 				}
 				break;
 			}
 		}
+		cout<<(uint16_t)(norm_x*1000)<<" "<<(uint16_t)(norm_y*1000)<<endl;
         if(cv::waitKey(1) == 'q'){
+			nano33->disconnect();
             break;
         }
 		//app.ShowPreview(completed_request, app.ViewfinderStream());
@@ -169,29 +169,14 @@ int main(int argc, char *argv[])
       if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
          cout<<"foundd service!"<<endl;
          for(auto& charc: service.characteristics()){
-            cout<<charc.uuid()<<endl;
-            uint16_t intValue1 = 123;  // First integer
-			uint16_t intValue2 = 456;  // Second integer
-
-			// Create a byte array to hold the two integers
-			std::byte byteArray[sizeof(intValue1) + sizeof(intValue2)];
-
-			// Copy the integers into the byte array
-			memcpy(byteArray, &intValue1, sizeof(intValue1));
-			memcpy(byteArray + sizeof(intValue1), &intValue2, sizeof(intValue2));
-
-			// Create a SimpleBLE::ByteArray from the byte array
-			SimpleBLE::ByteArray bleByteArray(reinterpret_cast<char*>(byteArray), sizeof(byteArray));
-			// Send the byte array
-			nano33->write_request(service.uuid(), charc.uuid(), bleByteArray);
-
+            sendLocation(nano33, service, charc, 123, 456);
             break;
          }
          break;
       }
    }
-	nano33->disconnect();
-	return 0;
+	//nano33->disconnect();
+	//return 0;
    //start camera
 	try
 	{
