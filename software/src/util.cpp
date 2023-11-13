@@ -6,6 +6,10 @@ using namespace std;
 using namespace cv;
 
 
+bool comp(const std::tuple<int, int, int>& a, const std::tuple<int, int, int>& b) {
+    return std::get<2>(a) > std::get<2>(b);
+}
+
 cv::Mat findDiffImg(const cv::Mat& img1,const cv::Mat& img2, int radius){
     radius = 2 * std::max(2, radius / 2) + 1; // Ensure radius is odd
     //cv::GaussianBlur(img1, img1, cv::Size(radius, radius), 0);
@@ -38,8 +42,23 @@ std::tuple<cv::Mat, int, std::pair<int, int>> diff_max(cv::Mat gray1, cv::Mat gr
     return std::make_tuple(diff, maxVal, max_location);
 }
 
-bool comp(const std::tuple<int, int, int>& a, const std::tuple<int, int, int>& b) {
-    return std::get<2>(a) > std::get<2>(b);
+vector<tuple<int,int,int>> maxValPos(const cv::Mat& grayImg, int threshold, int num_pts) {
+    // Create a binary mask where values are >= threshold
+    cv::Mat mask = (grayImg >= threshold);
+    // Find non-zero locations (x, y) where mask is true
+    std::vector<cv::Point> nonzeroPoints;
+    cv::findNonZero(mask, nonzeroPoints);
+    vector<tuple<int,int,int>> res;
+    for (int i = 0; i < nonzeroPoints.size(); ++i) {
+        res.push_back(tuple<int,int,int>(nonzeroPoints[i].x,nonzeroPoints[i].y, grayImg.at<uchar>(nonzeroPoints[i].y, nonzeroPoints[i].x)));
+    }
+    sort(res.begin(),res.end(),comp);
+    if (nonzeroPoints.size() <= num_pts) {
+        return res;
+    }else{
+        return vector<tuple<int,int,int>>(res.begin(), res.begin() + num_pts);
+    }
+
 }
 
 double globalMotion(const cv::Mat& diffImg, int threshold) {

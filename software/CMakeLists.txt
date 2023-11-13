@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
 project(laserTracker)
 
-# Find OpenCV package
+# Find packages
 find_package(OpenCV REQUIRED)
+find_package(simpleble REQUIRED CONFIG)
 
 # Specify the include directory
 include_directories(include)
 
 # Add the executable
-add_executable(test src/test.cpp src/background.cpp src/util.cpp)
+add_executable(test src/test.cpp src/background.cpp src/util.cpp src/myble.cpp)
 
 # Specify include directories
 target_include_directories(test PRIVATE
@@ -20,8 +21,5 @@ target_include_directories(test PRIVATE
 # Specify library directories
 link_directories(/usr/local/lib/aarch64-linux-gnu/)
 
-# Link with the camera_app library
-target_link_libraries(test PRIVATE camera_app)
-target_link_libraries(test PRIVATE camera)
-# Link with the OpenCV libraries
-target_link_libraries(test PRIVATE ${OpenCV_LIBS})
+# Link with the libraries
+target_link_libraries(test PRIVATE camera_app camera ${OpenCV_LIBS} simpleble::simpleble)

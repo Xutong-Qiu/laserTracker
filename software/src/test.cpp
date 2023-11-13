@@ -6,13 +6,14 @@
 #include <chrono>
 #include "background.h"
 #include "util.h"
+#include "myble.h"
 
 using namespace std;
 using namespace std::placeholders;
 using namespace cv;
 
 
-static void event_loop(LibcameraApp &app){
+static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 	Options const *options = app.GetOptions();
 
 	app.OpenCamera();
@@ -26,51 +27,49 @@ static void event_loop(LibcameraApp &app){
     auto startTime = std::chrono::high_resolution_clock::now();
 
 
-	// for (unsigned int count = 0; ; count++){
-	// 	LibcameraApp::Msg msg = app.Wait();
-    //     if (msg.type == LibcameraApp::MsgType::Timeout)
-	// 	{
-	// 		LOG_ERROR("ERROR: Device timeout detected, attempting a restart!!!");
-	// 		app.StopCamera();
-	// 		app.StartCamera();
-	// 		continue;
-	// 	}
-	// 	if (msg.type == LibcameraApp::MsgType::Quit)
-	// 		return;
-	// 	else if (msg.type != LibcameraApp::MsgType::RequestComplete)
-	// 		throw std::runtime_error("unrecognised message!");
+	for (unsigned int count = 0; ; count++){
+		LibcameraApp::Msg msg = app.Wait();
+        if (msg.type == LibcameraApp::MsgType::Timeout)
+		{
+			LOG_ERROR("ERROR: Device timeout detected, attempting a restart!!!");
+			app.StopCamera();
+			app.StartCamera();
+			continue;
+		}
+		if (msg.type == LibcameraApp::MsgType::Quit)
+			return;
+		else if (msg.type != LibcameraApp::MsgType::RequestComplete)
+			throw std::runtime_error("unrecognised message!");
+		frame_count++;
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
+        if(duration >=std::chrono::seconds(1)){
+            startTime = std::chrono::high_resolution_clock::now();
+            cout<<frame_count<<endl;
+            frame_count=0;
+        }
+		CompletedRequestPtr &completed_request = std::get<CompletedRequestPtr>(msg.payload);
 
-	// 	//LOG(2, "Viewfinder frame " << count);
-	// 	frame_count++;
-    //     auto now = std::chrono::high_resolution_clock::now();
-    //     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
-    //     if(duration >=std::chrono::seconds(1)){
-    //         startTime = std::chrono::high_resolution_clock::now();
-    //         cout<<frame_count<<endl;
-    //         frame_count=0;
-    //     }
-	// 	CompletedRequestPtr &completed_request = std::get<CompletedRequestPtr>(msg.payload);
-
-	// 	libcamera::Request::BufferMap &buffers = completed_request->buffers;
-	// 	const libcamera::FrameBuffer *fb = buffers[app.VideoStream()];
-	// 	cv::Mat frame = frameBufferToCvMat(app, *fb);
-	// 	cv::resize(frame, frame, cv::Size(972,648));
-    //     if (frame.empty()) {
-    //         std::cerr << "Error: Blank frame captured." << std::endl;
-    //         break;
-    //     }
-    //     bg.pinpointScreen(frame);
+		libcamera::Request::BufferMap &buffers = completed_request->buffers;
+		const libcamera::FrameBuffer *fb = buffers[app.VideoStream()];
+		cv::Mat frame = frameBufferToCvMat(app, *fb);
+		cv::resize(frame, frame, cv::Size(972,648));
+        if (frame.empty()) {
+            std::cerr << "Error: Blank frame captured." << std::endl;
+            break;
+        }
+        bg.pinpointScreen(frame);
         
-    //     cv::imshow("test", frame);
-    //     if (cv::waitKey(1) == 'q' || bg.screen.size()==4) {
-    //         break;
-    //     }
-    // }
+        cv::imshow("test", frame);
+        if (cv::waitKey(1) == 'q' || bg.screen.size()==4) {
+            break;
+        }
+    }
 	cout<<"Screen setup completed!"<<endl;
-	bg.screen.push_back({300,300});
-	bg.screen.push_back({300,100});
-	bg.screen.push_back({600,100});
-	bg.screen.push_back({600,300});
+	// bg.screen.push_back({300,300});
+	// bg.screen.push_back({300,100});
+	// bg.screen.push_back({600,100});
+	// bg.screen.push_back({600,300});
 	for (unsigned int count = 0; ; count++)
 	{
 		LibcameraApp::Msg msg = app.Wait();
@@ -118,9 +117,20 @@ static void event_loop(LibcameraApp &app){
             auto [s_x,s_y] = bg.screen[i];
             cv::circle(frame, cv::Point(s_x, s_y), 8, cv::Scalar(255), 2);
         }
-		auto [one,two] = getLaserLocationNormalized(bg.screen,{x,y});
-		cout<<one<<" "<<two<<endl;;
-		cv::imshow("test", frame);
+		auto [norm_x,norm_y] = getLaserLocationNormalized(bg.screen,{x,y});
+		//cv::imshow("test", frame);		
+		//send loc
+		for(auto& service:nano33->services()){
+			if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
+				cout<<"foundd service!"<<endl;
+				for(auto& charc: service.characteristics()){
+					cout<<charc.uuid()<<endl;
+					nano33->write_request(service.uuid(), charc.uuid(), to_string(norm_x)+ to_string(norm_y));
+					break;
+				}
+				break;
+			}
+		}
         if(cv::waitKey(1) == 'q'){
             break;
         }
@@ -131,16 +141,69 @@ static void event_loop(LibcameraApp &app){
 
 int main(int argc, char *argv[])
 {
+	//connect nano33
+	std::vector<SimpleBLE::Adapter> adapters = SimpleBLE::Adapter::get_adapters();
+
+   // Get the first adapter
+   SimpleBLE::Adapter adapter = adapters[0];
+
+   // Scan for peripherals for 5000 milliseconds
+   adapter.scan_for(5000);
+
+   // Get the list of peripherals found
+   std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
+   SimpleBLE::Peripheral* nano33 = NULL;
+   // Print the identifier of each peripheral
+   for (auto peripheral : peripherals) {     
+      if(peripheral.address() == "C7:51:97:E1:67:11"){
+         peripheral.connect();
+         nano33 = &peripheral;
+         break;
+      }
+   }
+   if(!nano33){
+      std::cout<<"Not connected!"<<endl;
+      return 0;
+   }
+   for(auto& service:nano33->services()){
+      if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
+         cout<<"foundd service!"<<endl;
+         for(auto& charc: service.characteristics()){
+            cout<<charc.uuid()<<endl;
+            uint16_t intValue1 = 123;  // First integer
+			uint16_t intValue2 = 456;  // Second integer
+
+			// Create a byte array to hold the two integers
+			std::byte byteArray[sizeof(intValue1) + sizeof(intValue2)];
+
+			// Copy the integers into the byte array
+			memcpy(byteArray, &intValue1, sizeof(intValue1));
+			memcpy(byteArray + sizeof(intValue1), &intValue2, sizeof(intValue2));
+
+			// Create a SimpleBLE::ByteArray from the byte array
+			SimpleBLE::ByteArray bleByteArray(reinterpret_cast<char*>(byteArray), sizeof(byteArray));
+			// Send the byte array
+			nano33->write_request(service.uuid(), charc.uuid(), bleByteArray);
+
+            break;
+         }
+         break;
+      }
+   }
+	nano33->disconnect();
+	return 0;
+   //start camera
 	try
 	{
 		LibcameraApp app;
 		Options *options = app.GetOptions();
+		// char* new_argv[argc + 2];
+		// new_argv[argc] = "-n";
+    	// int new_argc = argc + 1;
 		if (options->Parse(argc, argv))
 		{
-			if (options->verbose >= 2)
-				options->Print();
-
-			event_loop(app);
+			options->Print();
+			event_loop(app, nano33);
 		}
 	}
 	catch (std::exception const &e)
