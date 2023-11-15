@@ -37,13 +37,17 @@ void Background::addImg(const cv::Mat& frame) {
     }
 }
 
+bool comp(std::pair<int, int>& a, std::pair<int, int>& b){
+    return a.second < b.second;
+}
+
 bool Background::pinpointScreen(cv::Mat& frame){
     if(screen.size()==4){
-        sort(screen.begin(), screen.end());
-        if(screen[0].second > screen[1].second){
+        //sort(screen.begin(), screen.end(), comp);
+        if(screen[0].first > screen[1].first){
             swap(screen[0], screen[1]);
         }
-        if(screen[2].second < screen[3].second){
+        if(screen[2].first < screen[3].first){
             swap(screen[2], screen[3]);
         }
         return true;

@@ -9,7 +9,7 @@ public:
     Background(int length);
     void addImg(const cv::Mat& image);
     bool isReady();
-    void pinpointScreen(cv::Mat& frame);
+    bool pinpointScreen(cv::Mat& frame);
     cv::Rect detectScreen();
     cv::Mat getModel();
     std::deque<cv::Mat> images;

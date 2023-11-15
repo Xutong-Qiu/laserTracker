@@ -27,7 +27,7 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
     auto startTime = std::chrono::high_resolution_clock::now();
 
 	cout<<"Press w to set up the screen positions"<<endl;
-	if(cv::waitKey(0) == 'w'){
+	if(cv::waitKey(5000) == 'w'){
 		for (unsigned int count = 0; ; count++){
 			LibcameraApp::Msg msg = app.Wait();
 			if (msg.type == LibcameraApp::MsgType::Timeout)
@@ -65,10 +65,10 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 			}
 		}
     }else{
-		bg.screen.push_back({300,600});
 		bg.screen.push_back({300,100});
 		bg.screen.push_back({900,100});
 		bg.screen.push_back({900,600});
+		bg.screen.push_back({300,600});
 	}
 
 	cout<<"Screen setup completed!"<<endl;
@@ -127,13 +127,13 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		for(auto& service:nano33->services()){
 			if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
 				for(auto& charc: service.characteristics()){
-					sendLocation(nano33, service, charc, (uint16_t)(norm_x*1000), (uint16_t)(norm_y*1000));
+					sendLocation(nano33, service, charc, (uint16_t)(norm_x*972), (uint16_t)(norm_y*648));
 					break;
 				}
 				break;
 			}
 		}
-		cout<<(uint16_t)(norm_x*1000)<<" "<<(uint16_t)(norm_y*1000)<<endl;
+		//cout<<(uint16_t)(norm_x*972)<<" "<<(uint16_t)(norm_y*648)<<endl;
         if(cv::waitKey(1) == 'q'){
 			nano33->disconnect();
             break;
