@@ -8,7 +8,7 @@ using namespace cv;
 Background::Background(int length) : maxImg(length), model(cv::Mat()), ready(false), model2(cv::Mat()), flip(false) {
     temp_loc = {0,0};
     loc_count = 0;
-    screen = {};
+    screen.reserve(4);
 }
 
 void Background::addImg(const cv::Mat& frame) {
@@ -37,15 +37,22 @@ void Background::addImg(const cv::Mat& frame) {
     }
 }
 
-void Background::pinpointScreen(cv::Mat& frame){
+bool Background::pinpointScreen(cv::Mat& frame){
     if(screen.size()==4){
-        return;
+        sort(screen.begin(), screen.end());
+        if(screen[0].second > screen[1].second){
+            swap(screen[0], screen[1]);
+        }
+        if(screen[2].second < screen[3].second){
+            swap(screen[2], screen[3]);
+        }
+        return true;
     }
     auto [x,y] = oneStepTracker(*this, frame);
     if(x==0 && y==0){
         loc_count=0;
         temp_loc = {0,0};
-        return;
+        return false;
     }
     if(loc_count>=20 && distance(temp_loc, {x,y})<=30){
         screen.push_back({(temp_loc.first+x)/2, (temp_loc.second+y)/2});
@@ -66,9 +73,9 @@ void Background::pinpointScreen(cv::Mat& frame){
                 loc_count++;
                 //cout<<"loc_count: "<<loc_count<<endl;
             }
-        }
-        
+        }       
     }
+    return false;
 }
 
 double Background::distance(const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
