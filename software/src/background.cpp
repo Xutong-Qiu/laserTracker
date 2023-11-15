@@ -154,7 +154,6 @@ cv::Rect Background::detectScreen(){
             }
         }
     }
-    
     //cv::imshow("Camera Test", frame);
     //cv::imshow("edges", edges);
     return cv::boundingRect(largest_vertices);
