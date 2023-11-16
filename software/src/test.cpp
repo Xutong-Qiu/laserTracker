@@ -27,7 +27,7 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
     auto startTime = std::chrono::high_resolution_clock::now();
 
 	cout<<"Press w to set up the screen positions"<<endl;
-	if(cv::waitKey(5000) == 'w'){
+	if(cv::waitKey(0) == 'w'){
 		for (unsigned int count = 0; ; count++){
 			LibcameraApp::Msg msg = app.Wait();
 			if (msg.type == LibcameraApp::MsgType::Timeout)
@@ -99,6 +99,8 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
             frame_count=0;
         }
 
+
+		//auto start = std::chrono::high_resolution_clock::now();
 		CompletedRequestPtr &completed_request = std::get<CompletedRequestPtr>(msg.payload);
 		libcamera::Request::BufferMap &buffers = completed_request->buffers;
 		const libcamera::FrameBuffer *fb = buffers[app.VideoStream()];
@@ -107,12 +109,13 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
             std::cerr << "Error: Blank frame captured." << std::endl;
             break;
         }
+		//cout<<"retrieving frame takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
+		
         //tracking
         cv::resize(frame, frame, cv::Size(972,648));
         cv::GaussianBlur(frame, frame, cv::Size(5, 5), 0);
         cv::Mat processing_frame = frame.clone();
         auto [x,y] = oneStepTracker(bg, processing_frame);
-		//draw laser circle
         cv::circle(frame, cv::Point(x, y), 8, cv::Scalar(255), 2);
 		//cout<<x<<" "<<y<<endl;
 
@@ -122,18 +125,13 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
             cv::circle(frame, cv::Point(s_x, s_y), 8, cv::Scalar(255), 2);
         }
 		auto [norm_x,norm_y] = getLaserLocationNormalized(bg.screen,{x,y});
-		cv::imshow("test", frame);		
+		cv::imshow("test", frame);	
+		
 		//send loc
-		for(auto& service:nano33->services()){
-			if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
-				for(auto& charc: service.characteristics()){
-					sendLocation(nano33, service, charc, (uint16_t)(norm_x*972), (uint16_t)(norm_y*648));
-					break;
-				}
-				break;
-			}
-		}
-		//cout<<(uint16_t)(norm_x*972)<<" "<<(uint16_t)(norm_y*648)<<endl;
+		//start = std::chrono::high_resolution_clock::now();	
+		sendLocation((uint16_t)(norm_x*972), (uint16_t)(norm_y*648));
+		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
+		cout<<(uint16_t)(norm_x*972)<<" "<<(uint16_t)(norm_y*648)<<endl;
         if(cv::waitKey(1) == 'q'){
 			nano33->disconnect();
             break;
@@ -173,7 +171,7 @@ int main(int argc, char *argv[])
       if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
          cout<<"foundd service!"<<endl;
          for(auto& charc: service.characteristics()){
-            sendLocation(nano33, service, charc, 123, 456);
+            initSending(nano33, service, charc);
             break;
          }
          break;
