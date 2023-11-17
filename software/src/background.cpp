@@ -1,6 +1,7 @@
 #include "background.h"
 #include <opencv4/opencv.hpp>
 #include "util.h"
+#include "constants.h"
 
 using namespace std;
 using namespace cv;
@@ -58,7 +59,7 @@ bool Background::pinpointScreen(cv::Mat& frame){
         temp_loc = {0,0};
         return false;
     }
-    if(loc_count>=20 && distance(temp_loc, {x,y})<=30){
+    if(loc_count>=SCREEN_STD_FRAME_COUNT && distance(temp_loc, {x,y})<=SCREEN_STD_DIS){
         screen.push_back({(temp_loc.first+x)/2, (temp_loc.second+y)/2});
         loc_count = 0;
         temp_loc = {0,0};
@@ -68,7 +69,7 @@ bool Background::pinpointScreen(cv::Mat& frame){
             temp_loc = {x,y};
             loc_count++;
         }else{
-            if(distance(temp_loc, {x,y})>30){
+            if(distance(temp_loc, {x,y})>SCREEN_STD_DIS){
                 loc_count = 0;
                 temp_loc = {0,0};
                 cout<<"too far. retry this corner"<<endl;
@@ -109,7 +110,6 @@ bool Background::isReady(){
     }
     return false;
 }
-
 
 cv::Mat Background::getModel() {
     if(!isReady()){

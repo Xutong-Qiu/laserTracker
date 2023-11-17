@@ -38,12 +38,11 @@ std::tuple<cv::Mat, int, std::pair<int, int>> diff_max(cv::Mat gray1, cv::Mat gr
 }
 
 vector<tuple<int,int,int>> maxValPos(const cv::Mat& grayImg, int threshold, int num_pts) {
-    // Create a binary mask where values are >= threshold
     cv::Mat mask = (grayImg >= threshold);
-    // Find non-zero locations (x, y) where mask is true
     std::vector<cv::Point> nonzeroPoints;
     cv::findNonZero(mask, nonzeroPoints);
     vector<tuple<int,int,int>> res;
+    res.reserve(num_pts);
     for (int i = 0; i < nonzeroPoints.size(); ++i) {
         res.push_back(tuple<int,int,int>(nonzeroPoints[i].x,nonzeroPoints[i].y, grayImg.at<uchar>(nonzeroPoints[i].y, nonzeroPoints[i].x)));
     }
@@ -73,15 +72,13 @@ pair<int,int> oneStepTracker(Background& bg, cv::Mat& img){
     //cv::imshow("Camera", bg.getModel());
     //cout<<globalMotion(diffImg, PIXEL_CHANGED_THRESHOLD)<<endl;
     if(globalMotion(diffImg, PIXEL_CHANGED_THRESHOLD)<3*BACKGROUND_STABLE_THRESHOLD){
-        vector<tuple<int,int,int>> candidates = maxValPos(diffImg, PIXEL_CHANGED_THRESHOLD, 10);
+        vector<tuple<int,int,int>> candidates = maxValPos(diffImg, PIXEL_CHANGED_THRESHOLD, 1);
         if(candidates.size()==0){
             return {0,0};
         }
-        auto [x,y,val] = candidates[0];
-        
+        auto [x,y,val] = candidates[0];      
         // cv::Mat mask = diffImg > PIXEL_CHANGED_THRESHOLD;
-        // cv::imshow("move", mask);
-        
+        // cv::imshow("move", mask);       
         return {x, y};
     }else{
         //cout<<"Background changed. Remodeling..."<<endl;
@@ -91,7 +88,6 @@ pair<int,int> oneStepTracker(Background& bg, cv::Mat& img){
 }
 
 cv::Mat frameBufferToCvMat(LibcameraApp& app, const libcamera::FrameBuffer &buffer){
-    // Retrieve the planes from the buffer
     const std::vector<libcamera::FrameBuffer::Plane> &planes = buffer.planes();
     if(planes.empty())
         return cv::Mat(); 
@@ -122,14 +118,12 @@ std::pair<double, double> getLaserLocationNormalized(
         throw std::invalid_argument("There must be exactly four screen corners provided.");
     }
     if(!hasTrMatrix){
-        // Convert screen corners to OpenCV points
         std::vector<cv::Point2f> cvScreenCorners(4);
         for (size_t i = 0; i < screenCorners.size(); ++i) {
             cvScreenCorners[i] = cv::Point2f(static_cast<float>(screenCorners[i].first),
                                             static_cast<float>(screenCorners[i].second));
         }
 
-        // Define the points in the projector's coordinate system
         std::vector<cv::Point2f> projectorCorners = {
             cv::Point2f(0.0f, 0.0f), // Top-left
             cv::Point2f(1.0f, 0.0f), // Top-right
