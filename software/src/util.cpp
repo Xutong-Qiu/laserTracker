@@ -6,7 +6,7 @@ using namespace std;
 using namespace cv;
 
 
-bool comp(const std::tuple<int, int, int>& a, const std::tuple<int, int, int>& b) {
+static bool comp(const std::tuple<int, int, int>& a, const std::tuple<int, int, int>& b) {
     return std::get<2>(a) > std::get<2>(b);
 }
 
@@ -44,7 +44,8 @@ vector<tuple<int,int,int>> maxValPos(const cv::Mat& grayImg, int threshold, int 
     vector<tuple<int,int,int>> res;
     res.reserve(num_pts);
     for (int i = 0; i < nonzeroPoints.size(); ++i) {
-        res.push_back(tuple<int,int,int>(nonzeroPoints[i].x,nonzeroPoints[i].y, grayImg.at<uchar>(nonzeroPoints[i].y, nonzeroPoints[i].x)));
+        res.push_back(tuple<int,int,int>(nonzeroPoints[i].x,nonzeroPoints[i].y, 
+            grayImg.at<uchar>(nonzeroPoints[i].y, nonzeroPoints[i].x)));
     }
     sort(res.begin(),res.end(),comp);
     if (nonzeroPoints.size() <= num_pts) {

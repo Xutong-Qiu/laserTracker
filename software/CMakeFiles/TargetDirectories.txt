@@ -1,3 +1,0 @@
-/home/qiuxutong/Desktop/camTest/CMakeFiles/test.dir
-/home/qiuxutong/Desktop/camTest/CMakeFiles/edit_cache.dir
-/home/qiuxutong/Desktop/camTest/CMakeFiles/rebuild_cache.dir

@@ -112,7 +112,7 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		//cout<<"retrieving frame takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
 		
         //tracking
-        cv::resize(frame, frame, cv::Size(972,648));
+        cv::resize(frame, frame, cv::Size(MAT_WIDTH,MAT_HEIGHT));
         cv::GaussianBlur(frame, frame, cv::Size(5, 5), 0);
         cv::Mat processing_frame = frame.clone();
         auto [x,y] = oneStepTracker(bg, processing_frame);
@@ -129,9 +129,9 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		
 		//send loc
 		//start = std::chrono::high_resolution_clock::now();	
-		sendLocation((uint16_t)(norm_x*972), (uint16_t)(norm_y*648));
+		sendLocation((uint16_t)(norm_x*MAT_WIDTH), (uint16_t)(norm_y*MAT_HEIGHT),0);
 		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
-		cout<<(uint16_t)(norm_x*972)<<" "<<(uint16_t)(norm_y*648)<<endl;
+		cout<<(uint16_t)(norm_x*MAT_WIDTH)<<" "<<(uint16_t)(norm_y*MAT_HEIGHT)<<endl;
         if(cv::waitKey(1) == 'q'){
 			nano33->disconnect();
             break;
