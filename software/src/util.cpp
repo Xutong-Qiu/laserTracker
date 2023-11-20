@@ -2,9 +2,10 @@
 #include <opencv4/opencv.hpp>
 #include "util.h"
 #include <algorithm>
+#include "constants.h"
+
 using namespace std;
 using namespace cv;
-
 
 static bool comp(const std::tuple<int, int, int>& a, const std::tuple<int, int, int>& b) {
     return std::get<2>(a) > std::get<2>(b);
@@ -42,7 +43,6 @@ vector<tuple<int,int,int>> maxValPos(const cv::Mat& grayImg, int threshold, int 
     std::vector<cv::Point> nonzeroPoints;
     cv::findNonZero(mask, nonzeroPoints);
     vector<tuple<int,int,int>> res;
-    res.reserve(num_pts);
     for (int i = 0; i < nonzeroPoints.size(); ++i) {
         res.push_back(tuple<int,int,int>(nonzeroPoints[i].x,nonzeroPoints[i].y, 
             grayImg.at<uchar>(nonzeroPoints[i].y, nonzeroPoints[i].x)));
@@ -63,6 +63,17 @@ double globalMotion(const cv::Mat& diffImg, int threshold) {
     return static_cast<double>(movedPixels) / totalPixels;
 }
 
+pair<int,int> selectCandidate(const vector<tuple<int,int,int>>& candidates){
+    static pair<int,int> last_pos = {0,0};
+    if(candidates.size()==0){
+        return last_pos;
+    }
+    if(abs(get<0>(candidates.front()) - get<0>(candidates.back()))<5){
+        last_pos = {get<0>(candidates.front()), get<1>(candidates.front())};
+    }
+    return last_pos;
+}
+
 pair<int,int> oneStepTracker(Background& bg, cv::Mat& img){
     pair<int,int> res =pair{0,0};
     if(!bg.isReady()){
@@ -73,14 +84,12 @@ pair<int,int> oneStepTracker(Background& bg, cv::Mat& img){
     //cv::imshow("Camera", bg.getModel());
     //cout<<globalMotion(diffImg, PIXEL_CHANGED_THRESHOLD)<<endl;
     if(globalMotion(diffImg, PIXEL_CHANGED_THRESHOLD)<3*BACKGROUND_STABLE_THRESHOLD){
-        vector<tuple<int,int,int>> candidates = maxValPos(diffImg, PIXEL_CHANGED_THRESHOLD, 1);
-        if(candidates.size()==0){
-            return {0,0};
-        }
-        auto [x,y,val] = candidates[0];      
-        // cv::Mat mask = diffImg > PIXEL_CHANGED_THRESHOLD;
-        // cv::imshow("move", mask);       
-        return {x, y};
+        vector<tuple<int,int,int>> candidates = maxValPos(diffImg, LASER_BRIGHTNESS_THRESHOLD, 10);
+        //auto [x,y,val] = candidates[0];      
+        //cv::Mat mask = diffImg > PIXEL_CHANGED_THRESHOLD;
+        //cv::imshow("move", mask);       
+        //return {x, y};
+        return selectCandidate(candidates);
     }else{
         //cout<<"Background changed. Remodeling..."<<endl;
         bg.addImg(img);

@@ -4,11 +4,6 @@
 #include <core/libcamera_app.hpp>
 #include <libcamera/framebuffer.h>
 
-const int PIXEL_CHANGED_THRESHOLD = 7;
-const double BACKGROUND_STABLE_THRESHOLD = 0.01;
-const int BACKGROUND_IMG_NUM = 5;
-
-
 std::tuple<cv::Mat, int, std::pair<int, int>> diff_max(cv::Mat img1, cv::Mat img2, int radius);
 cv::Mat findDiffImg(const cv::Mat& img1,const cv::Mat& img2, int radius);
 double globalMotion(const cv::Mat& diffImg, int threshold);

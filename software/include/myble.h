@@ -3,4 +3,4 @@
 #include <string>
 
 bool initSending(SimpleBLE::Peripheral* peripheral, SimpleBLE::Service& service, SimpleBLE::Characteristic& charc);
-bool sendLocation( uint16_t x, uint16_t y);
+bool sendLocation( uint16_t x, uint16_t y, uint8_t operation);

@@ -7,6 +7,7 @@
 #include "background.h"
 #include "util.h"
 #include "myble.h"
+#include "constants.h"
 
 using namespace std;
 using namespace std::placeholders;
@@ -129,7 +130,7 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		
 		//send loc
 		//start = std::chrono::high_resolution_clock::now();	
-		sendLocation((uint16_t)(norm_x*MAT_WIDTH), (uint16_t)(norm_y*MAT_HEIGHT),0);
+		//sendLocation((uint16_t)(norm_x*MAT_WIDTH), (uint16_t)(norm_y*MAT_HEIGHT),0);
 		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
 		cout<<(uint16_t)(norm_x*MAT_WIDTH)<<" "<<(uint16_t)(norm_y*MAT_HEIGHT)<<endl;
         if(cv::waitKey(1) == 'q'){
@@ -163,20 +164,20 @@ int main(int argc, char *argv[])
          break;
       }
    }
-   if(!nano33){
-      std::cout<<"Not connected!"<<endl;
-      return 0;
-   }
-   for(auto& service:nano33->services()){
-      if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
-         cout<<"foundd service!"<<endl;
-         for(auto& charc: service.characteristics()){
-            initSending(nano33, service, charc);
-            break;
-         }
-         break;
-      }
-   }
+//    if(!nano33){
+//       std::cout<<"Not connected!"<<endl;
+//       return 0;
+//    }
+//    for(auto& service:nano33->services()){
+//       if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
+//          cout<<"foundd service!"<<endl;
+//          for(auto& charc: service.characteristics()){
+//             initSending(nano33, service, charc);
+//             break;
+//          }
+//          break;
+//       }
+//    }
 	//nano33->disconnect();
 	//return 0;
    //start camera
