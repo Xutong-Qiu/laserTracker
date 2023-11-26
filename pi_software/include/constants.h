@@ -7,4 +7,6 @@ const int SCREEN_STD_FRAME_COUNT = 20;
 const int SCREEN_STD_DIS= 30;
 const int MAT_WIDTH= 972;
 const int MAT_HEIGHT= 648;
+const int CLIENT_WIDTH= 10000;
+const int CLIENT_HEIGHT= 10000;
 const int LASER_BRIGHTNESS_THRESHOLD = 30;

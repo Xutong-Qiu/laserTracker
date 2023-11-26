@@ -130,9 +130,11 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		
 		//send loc
 		//start = std::chrono::high_resolution_clock::now();	
-		//sendLocation((uint16_t)(norm_x*MAT_WIDTH), (uint16_t)(norm_y*MAT_HEIGHT),0);
+		if(frame_count%4==0){
+			sendLocation((uint16_t)(norm_x*CLIENT_WIDTH), (uint16_t)(norm_y*CLIENT_HEIGHT),0);
+		}
 		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
-		cout<<(uint16_t)(norm_x*MAT_WIDTH)<<" "<<(uint16_t)(norm_y*MAT_HEIGHT)<<endl;
+		cout<<(uint16_t)(norm_x*CLIENT_WIDTH)<<" "<<(uint16_t)(norm_y*CLIENT_HEIGHT)<<endl;
         if(cv::waitKey(1) == 'q'){
 			nano33->disconnect();
             break;
@@ -158,28 +160,36 @@ int main(int argc, char *argv[])
    SimpleBLE::Peripheral* nano33 = NULL;
    // Print the identifier of each peripheral
    for (auto peripheral : peripherals) {     
-      if(peripheral.address() == "C7:51:97:E1:67:11"){
+		//cout<<peripheral.address()<<peripheral.identifier()<<endl;
+      if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
          peripheral.connect();
          nano33 = &peripheral;
          break;
       }
    }
-//    if(!nano33){
-//       std::cout<<"Not connected!"<<endl;
-//       return 0;
+   if(!nano33){
+      std::cout<<"Not connected!"<<endl;
+      return 0;
+   }
+   for(auto& service:nano33->services()){
+      if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
+         cout<<"found service!"<<endl;
+         for(auto& charc: service.characteristics()){
+            if (charc.uuid() == SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")) {
+                cout << "Found characteristic!" << endl;
+                initSending(nano33, service, charc);
+                break; 
+            }
+         }
+         break;
+      }
+   }
+//    while(1){
+//    	sendLocation((uint16_t)1234, (uint16_t)1234,0);
+// 	std::this_thread::sleep_for(std::chrono::seconds(2));
 //    }
-//    for(auto& service:nano33->services()){
-//       if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
-//          cout<<"foundd service!"<<endl;
-//          for(auto& charc: service.characteristics()){
-//             initSending(nano33, service, charc);
-//             break;
-//          }
-//          break;
-//       }
-//    }
-	//nano33->disconnect();
-	//return 0;
+// 	nano33->disconnect();
+// 	return 0;
    //start camera
 	try
 	{
