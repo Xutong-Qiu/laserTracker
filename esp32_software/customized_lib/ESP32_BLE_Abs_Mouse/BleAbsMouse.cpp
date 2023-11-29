@@ -137,6 +137,10 @@ bool BleAbsMouse::isConnected(void) {
   return this->connectionStatus->connected;
 }
 
+bool BleAbsMouse::isConnectedController(void){
+  return this->connectionStatus->connectedController;
+}
+
 void BleAbsMouse::setBatteryLevel(uint8_t level) {
   this->batteryLevel = level;
   if (hid != 0)
@@ -170,6 +174,7 @@ void BleAbsMouse::taskServer(void* pvParameter) {
   BLEAdvertising *pAdvertising = pServer->getAdvertising();
   pAdvertising->setAppearance(HID_MOUSE);
   pAdvertising->addServiceUUID(bleMouseInstance->hid->hidService()->getUUID());
+  pAdvertising->addServiceUUID("19b10010-e8f2-537e-4f6c-d104768a1214");
   pAdvertising->start();
   bleMouseInstance->hid->setBatteryLevel(bleMouseInstance->batteryLevel);
 

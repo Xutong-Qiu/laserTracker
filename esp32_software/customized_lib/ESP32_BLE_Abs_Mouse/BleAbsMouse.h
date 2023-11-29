@@ -24,6 +24,7 @@ public:
   void release(void);
   void send(int state, int16_t x, int16_t y);
   bool isConnected(void);
+  bool isConnectedController(void);
   void setBatteryLevel(uint8_t level);
   BLEServer* getpServer();
   uint8_t batteryLevel;
