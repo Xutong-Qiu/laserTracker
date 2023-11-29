@@ -130,8 +130,19 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		
 		//send loc
 		//start = std::chrono::high_resolution_clock::now();	
-		if(frame_count%4==0){
-			sendLocation((uint16_t)(norm_x*CLIENT_WIDTH), (uint16_t)(norm_y*CLIENT_HEIGHT),0);
+		static uint16_t each_other = 0;
+		static double cache_x = 0.0, cache_y = 0.0;
+		each_other++;
+		if(each_other==2){
+			each_other = 0;
+			norm_x += cache_x;
+			norm_x/=2;
+			norm_y += cache_y;
+			norm_y/=2;
+			sendLocation((uint16_t)(norm_x*CLIENT_WIDTH), (uint16_t)(norm_y*CLIENT_HEIGHT));
+		}else{
+			cache_x = norm_x;
+			cache_y = norm_y;
 		}
 		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
 		cout<<(uint16_t)(norm_x*CLIENT_WIDTH)<<" "<<(uint16_t)(norm_y*CLIENT_HEIGHT)<<endl;
@@ -146,42 +157,51 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 
 int main(int argc, char *argv[])
 {
-	//connect nano33
+	//connecting esp32
 	std::vector<SimpleBLE::Adapter> adapters = SimpleBLE::Adapter::get_adapters();
 
    // Get the first adapter
    SimpleBLE::Adapter adapter = adapters[0];
-
-   // Scan for peripherals for 5000 milliseconds
    adapter.scan_for(5000);
 
    // Get the list of peripherals found
    std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
    SimpleBLE::Peripheral* nano33 = NULL;
    // Print the identifier of each peripheral
-   for (auto peripheral : peripherals) {     
+   for (auto& peripheral : peripherals) {     
 		//cout<<peripheral.address()<<peripheral.identifier()<<endl;
-      if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
-         peripheral.connect();
-         nano33 = &peripheral;
-         break;
-      }
+		if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
+			peripheral.connect();
+			nano33 = &peripheral;
+			break;
+		}
    }
    if(!nano33){
-      std::cout<<"Not connected!"<<endl;
-      return 0;
+		peripherals = adapter.get_paired_peripherals();
+		 for (auto& peripheral : peripherals) {     
+				//cout<<peripheral.address()<<peripheral.identifier()<<endl;
+			if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
+				peripheral.connect();
+				nano33 = &peripheral;
+				break;
+			}
+		}
+		if(!nano33){
+			std::cout<<"Not connected!"<<endl;
+			return 0;
+		}
    }
    for(auto& service:nano33->services()){
-      if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
-         cout<<"found service!"<<endl;
-         for(auto& charc: service.characteristics()){
-            if (charc.uuid() == SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")) {
-                cout << "Found characteristic!" << endl;
-                initSending(nano33, service, charc);
-                break; 
-            }
-         }
-         break;
+		if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
+			cout<<"found service!"<<endl;
+			for(auto& charc: service.characteristics()){
+				if (charc.uuid() == SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")) {
+					cout << "Found characteristic!" << endl;
+					initSending(nano33, service, charc);
+					break; 
+				}
+			}
+			break;
       }
    }
 //    while(1){

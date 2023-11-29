@@ -9,14 +9,12 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() >= sizeof(uint16_t) * 2) {
+        uint16_t x = *reinterpret_cast<const uint16_t*>(value.data());
+        uint16_t y = *reinterpret_cast<const uint16_t*>(value.data() + sizeof(uint16_t));
 
-          // Assuming the same order: x (uint16_t), y (uint16_t), op (uint8_t)
-          uint16_t x = *reinterpret_cast<const uint16_t*>(value.data());
-          uint16_t y = *reinterpret_cast<const uint16_t*>(value.data() + sizeof(uint16_t));
-
-          //Serial.print("X: "); Serial.print(x);
-          //Serial.print(", Y: "); Serial.println(y);
-          bleAbsMouse.move(x,y);
+        //Serial.print("X: "); Serial.print(x);
+        //Serial.print(", Y: "); Serial.println(y);
+        bleAbsMouse.move(x,y);
       }
     }
 };
@@ -32,8 +30,8 @@ void setup() {
   BLEService *pService = pServer->createService("19b10010-e8f2-537e-4f6c-d104768a1214");
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
                                          "19b10010-e8f2-537e-4f6c-d104768a1214",
-                                         BLECharacteristic::PROPERTY_READ |
-                                         BLECharacteristic::PROPERTY_WRITE
+                                         //BLECharacteristic::PROPERTY_READ |
+                                         BLECharacteristic::PROPERTY_WRITE_NR 
                                        );
   pCharacteristic->setCallbacks(new MyCallbacks());
   pService->start(); 
@@ -46,12 +44,13 @@ void setup() {
 }
 
 void loop() {
-  while(!bleAbsMouse.isConnected() || !bleAbsMouse.isConnectedController()){
-    delay(500);
-    //Serial.println(pServer->getConnectedCount() == (uint32_t)2);
+  while(pServer->getConnectedCount()!=2){
+    BLEAdvertising *pAdvertising = pServer->getAdvertising();
+    pAdvertising->start();   
+    delay(5000);
   }
   Serial.println("Connected!");
-  while(bleAbsMouse.isConnected() && bleAbsMouse.isConnectedController()) {
+  while(pServer->getConnectedCount()==2) {
     delay(5000);
   }
   Serial.println("Waiting for connection...");
