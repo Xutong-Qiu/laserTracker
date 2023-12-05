@@ -44,7 +44,7 @@ bool comp(std::pair<int, int>& a, std::pair<int, int>& b){
 
 bool Background::pinpointScreen(cv::Mat& frame){
     if(screen.size()==4){
-        //sort(screen.begin(), screen.end(), comp);
+        sort(screen.begin(), screen.end(), comp);
         if(screen[0].first > screen[1].first){
             swap(screen[0], screen[1]);
         }
@@ -54,16 +54,17 @@ bool Background::pinpointScreen(cv::Mat& frame){
         return true;
     }
     auto [x,y] = oneStepTracker(*this, frame);
+    //cout<<x<<" "<<y<<endl;
     if(x==0 && y==0){
         loc_count=0;
         temp_loc = {0,0};
         return false;
     }
-    if(loc_count>=SCREEN_STD_FRAME_COUNT && distance(temp_loc, {x,y})<=SCREEN_STD_DIS){
+    if(loc_count >= SCREEN_STD_FRAME_COUNT && distance(temp_loc, {x,y}) <= SCREEN_STD_DIS){
         screen.push_back({(temp_loc.first+x)/2, (temp_loc.second+y)/2});
         loc_count = 0;
         temp_loc = {0,0};
-        cout<<"Good. next corner!"<<endl;
+        cout<<"Good. Please pinpoint the next corner!"<<endl;
     }else{
         if(loc_count == 0){
             temp_loc = {x,y};
@@ -72,7 +73,7 @@ bool Background::pinpointScreen(cv::Mat& frame){
             if(distance(temp_loc, {x,y})>SCREEN_STD_DIS){
                 loc_count = 0;
                 temp_loc = {0,0};
-                cout<<"too far. retry this corner"<<endl;
+                cout<<"Stabilizing..."<<endl;
             }else{
                 temp_loc = {(temp_loc.first+x)/2, (temp_loc.second+y)/2};
                 loc_count++;

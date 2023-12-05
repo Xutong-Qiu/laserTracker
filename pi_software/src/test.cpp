@@ -15,20 +15,22 @@ using namespace cv;
 
 
 static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
-	Options const *options = app.GetOptions();
-
-	app.OpenCamera();
-	app.ConfigureVideo();
-	app.StartCamera();
-	
 	Background bg(BACKGROUND_IMG_NUM);
     
     Mat frame;
     int frame_count = 0;
     auto startTime = std::chrono::high_resolution_clock::now();
 
-	cout<<"Press w to set up the screen positions"<<endl;
-	if(cv::waitKey(0) == 'w'){
+	cout<<"Enter w to set up the screen positions or s to skip:"<<endl;
+	char key = cin.get();
+
+	Options const *options = app.GetOptions();
+
+	app.OpenCamera();
+	app.ConfigureVideo();
+	app.StartCamera();
+	
+	if(key == 'w'){
 		for (unsigned int count = 0; ; count++){
 			LibcameraApp::Msg msg = app.Wait();
 			if (msg.type == LibcameraApp::MsgType::Timeout)
@@ -42,24 +44,26 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 				return;
 			else if (msg.type != LibcameraApp::MsgType::RequestComplete)
 				throw std::runtime_error("unrecognised message!");
-			frame_count++;
-			auto now = std::chrono::high_resolution_clock::now();
-			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
-			if(duration >=std::chrono::seconds(1)){
-				startTime = std::chrono::high_resolution_clock::now();
-				cout<<frame_count<<endl;
-				frame_count=0;
-			}
+
+			// frame_count++;
+			// auto now = std::chrono::high_resolution_clock::now();
+			// auto duration = std::chrono::duration_cast<std::chrono::microseconds>(now - startTime);
+			// if(duration >=std::chrono::seconds(1)){
+			// 	startTime = std::chrono::high_resolution_clock::now();
+			// 	cout<<frame_count<<endl;
+			// 	frame_count=0;
+			// }
 
 			CompletedRequestPtr &completed_request = std::get<CompletedRequestPtr>(msg.payload);
 			libcamera::Request::BufferMap &buffers = completed_request->buffers;
 			const libcamera::FrameBuffer *fb = buffers[app.VideoStream()];
 			cv::Mat frame = frameBufferToCvMat(app, *fb);
-			cv::resize(frame, frame, cv::Size(972,648));
 			if (frame.empty()) {
 				std::cerr << "Error: Blank frame captured." << std::endl;
 				break;
 			}
+			cv::resize(frame, frame, cv::Size(MAT_WIDTH,MAT_HEIGHT));
+			cv::GaussianBlur(frame, frame, cv::Size(5, 5), 0);
 			cv::imshow("test", frame);
 			if (cv::waitKey(1) == 'q' || bg.pinpointScreen(frame)) {
 				break;
@@ -72,8 +76,10 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		bg.screen.push_back({300,600});
 	}
 
-	cout<<"Screen setup completed!"<<endl;
-
+	cout<<"Screen setup completed! The corner locations are: "<<endl;
+	for(auto [x,y]:bg.screen){
+		cout<<x<<" "<<y<<endl;
+	}
 	for (unsigned int count = 0; ; count++)
 	{
 		LibcameraApp::Msg msg = app.Wait();
@@ -145,7 +151,7 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 			cache_y = norm_y;
 		}
 		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
-		cout<<(uint16_t)(norm_x*CLIENT_WIDTH)<<" "<<(uint16_t)(norm_y*CLIENT_HEIGHT)<<endl;
+		//cout<<(uint16_t)(norm_x*CLIENT_WIDTH)<<" "<<(uint16_t)(norm_y*CLIENT_HEIGHT)<<endl;
         if(cv::waitKey(1) == 'q'){
 			nano33->disconnect();
             break;

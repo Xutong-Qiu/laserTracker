@@ -30,8 +30,7 @@ void writeThreadFunction() {
             lock.unlock();
 
             auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - timedData.timestamp).count() <= 100) {
-                // Data is still fresh, send it
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - timedData.timestamp).count() <= 30) {
                 p->write_request(s.uuid(), c.uuid(), timedData.data);
             } 
             lock.lock();
