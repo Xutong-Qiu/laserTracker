@@ -7,6 +7,7 @@ public:
     std::vector<std::pair<int,int>> screen;
     bool ready;
     Background(int length);
+    void clear();
     void addImg(const cv::Mat& image);
     bool isReady();
     bool pinpointScreen(cv::Mat& frame);

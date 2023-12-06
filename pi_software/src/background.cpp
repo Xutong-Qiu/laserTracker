@@ -12,6 +12,13 @@ Background::Background(int length) : maxImg(length), model(cv::Mat()), ready(fal
     screen.reserve(4);
 }
 
+void Background::clear(){
+    images.clear();
+    images2.clear();
+    model = cv::Mat();
+    model2 = cv::Mat();
+}
+
 void Background::addImg(const cv::Mat& frame) {
     cv::Mat image = frame / maxImg;
     if(images.empty()){

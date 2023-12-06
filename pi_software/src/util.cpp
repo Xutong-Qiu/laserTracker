@@ -89,10 +89,12 @@ pair<int,int> oneStepTracker(Background& bg, cv::Mat& img){
         //cv::Mat mask = diffImg > PIXEL_CHANGED_THRESHOLD;
         //cv::imshow("move", mask);       
         //return {x, y};
+        bg.add
         return selectCandidate(candidates);
     }else{
-        //cout<<"Background changed. Remodeling..."<<endl;
-        bg.addImg(img);
+        bg.clear();
+        cout<<"Background changed. Remodeling..."<<endl;
+        
     }
     return res;
 }
