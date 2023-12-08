@@ -90,7 +90,6 @@ These works collectively form the bedrock of our project's approach, providing b
 
 # 3. Technical Approach
 
-
 The heart of the laser tracking mechanism is a highly efficient background subtraction algorithm running on the Raspberry Pi. This algorithm is responsible for distinguishing the laser pointer from the static background in real-time. By analyzing the video frames captured by the Pi's camera module, the algorithm efficiently isolates the bright spot of the laser, enabling precise detection and tracking. The computationally optimized process ensures rapid execution, crucial for maintaining the system's real-time performance. The algorithm's output is a set of coordinates representing the laser's position, which are then queued for transmission to the client's PC.
 
 Building upon this foundational tracking system, the technical infrastructure incorporates a GitHub library tailored for the ESP32, which empowers the device to control the client's mouse cursor using absolute positioning via the HID touchpad interface. Initially, this library was singularly focused, allowing the ESP32 to function solely as a Bluetooth mouse. To align with the project's requirements for dual connectivity, the library's source code was modified to enable the ESP32 to establish and manage connections with both the Raspberry Pi for input data and the client's PC for cursor control. This adaptation was achieved by introducing additional services and characteristics to the BLE server, expanding its capabilities.
@@ -101,6 +100,12 @@ The Raspberry Pi's LibCamera library is deployed to handle raw camera feed proce
 
 # 4. Evaluation and Results
 
+The result of this project is demonstrated in the demo video. In this report, we will review some of the key metrcics that are achieved in the current system.
+
+- **Responsiveness:** Upon optimization, the background subtraction algorithm running on Raspberry Pi holds a generally stable 30 FPS. Based on our observation, occationally background changes, which result in background model rebuilding, can sometime take the frame rate down to 27 to 28 FPS, with the lowest of 25 FPS observed. However, the frame drops are bearly noticable given their rare occuration and short duration.
+- **Accuracy:** Tracking accuracy partially depends on user set up. Since the laser pointer location is representated using pixel location, in the ideal scenario, the screen should occupy the camera's full window. However, tracking accuracy is still great even with a screen occupying 600*500 pixel. In this set up, we are still able to navagate mouse cursor using laser pointer to click the smallest button on the PC such as close and minimize.
+- **Reliability:** A stable BLE connection is also achieved. No disconnect event is observed in our testing. 
+- **Convienience:** To use this system, there is no set up required on the client PC. A user can simply connect to our device like what they do to a bluetooth mouse. 
 
 
 # 5. Discussion and Conclusions
