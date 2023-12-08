@@ -9,21 +9,9 @@
 
 # Abstract
 
-Provide a brief overview of the project objhectives, approach, and results.
-
 This project aims to develop a laser pointer tracking system for mouse cursor control on projection screens using a Raspberry Pi and an ESP32. It adapts real-time computer vision algorithms for efficient spot detection and cursor positioning on embedded systems to make a low-cost, intuitive interface that enhances interaction with digital content.
 
 # 1. Introduction
-
-This section should cover the following items:
-
-* Motivation & Objective: What are you trying to do and why? (plain English without jargon)
-* State of the Art & Its Limitations: How is it done today, and what are the limits of current practice?
-* Novelty & Rationale: What is new in your approach and why do you think it will be successful?
-* Potential Impact: If the project is successful, what difference will it make, both technically and broadly?
-* Challenges: What are the challenges and risks?
-* Requirements for Success: What skills and resources are necessary to perform the project?
-* Metrics of Success: What are metrics by which you would check for success?
 
 ## 1. Motivation & Objective
 
@@ -86,37 +74,35 @@ Another pivotal resource lays under the mouse controller is the "ESP32 BLE Absol
 
 These works collectively form the bedrock of our project's approach, providing both practical code examples and theoretical underpinnings that guide our development and innovation in laser tracking for mouse cursor control.
 
-
-
 # 3. Technical Approach
 
-The heart of the laser tracking mechanism is a highly efficient background subtraction algorithm running on the Raspberry Pi. This algorithm is responsible for distinguishing the laser pointer from the static background in real-time. By analyzing the video frames captured by the Pi's camera module, the algorithm efficiently isolates the bright spot of the laser, enabling precise detection and tracking. The computationally optimized process ensures rapid execution, crucial for maintaining the system's real-time performance. The algorithm's output is a set of coordinates representing the laser's position, which are then queued for transmission to the client's PC.
+The heart of the laser tracking mechanism is a highly efficient background subtraction algorithm running on the Raspberry Pi. This algorithm is responsible for distinguishing the laser pointer from the static background in real-time. By analyzing each video frame captured by the Pi's camera module, the algorithm efficiently isolates the bright spot of the laser, enabling precise detection and tracking. The computationally optimized process ensures rapid execution, crucial for maintaining the system's real-time performance. The algorithm's output is a set of coordinates representing the laser's position, which are then queued for transmission to ESP32.
 
-Building upon this foundational tracking system, the technical infrastructure incorporates a GitHub library tailored for the ESP32, which empowers the device to control the client's mouse cursor using absolute positioning via the HID touchpad interface. Initially, this library was singularly focused, allowing the ESP32 to function solely as a Bluetooth mouse. To align with the project's requirements for dual connectivity, the library's source code was modified to enable the ESP32 to establish and manage connections with both the Raspberry Pi for input data and the client's PC for cursor control. This adaptation was achieved by introducing additional services and characteristics to the BLE server, expanding its capabilities.
+To effectively manage the flow of location data to ESP32, a thread queue was implemented, enabling concurrent sending while avoid data competing. Before executing, threads are monitored for data expiry — if the sending attempt falls outside an acceptable time window (enqueue time versus sending time), the data is considered outdated and discarded to preserve the integrity of real-time interaction.
 
-To manage the flow of location data to the client's PC, a thread queue was implemented, fostering an environment where data transmission occurs without conflict, and location updates are systematically ordered. Threads are monitored for data expiry — if the sending attempt falls outside an acceptable time window (enqueue time versus sending time), the data is considered outdated and discarded to preserve the integrity of real-time interaction.
+Building upon this tracking system, ESP32 is programmed using Arduino IDE. The major libary used is a customized mouse library using absolute positioning via the HID touchpad interface, which empowers the device to control the client's mouse cursor. Originally, this library was designed to handle one-way communication between ESP32 and client PC, allowing the ESP32 to function solely as a Bluetooth mouse. To align with the project's requirements for dual connectivity, the library's source code was modified to enable the ESP32 to establish and manage connections with both the Raspberry Pi for input data and the client's PC for cursor control. This adaptation was achieved by introducing additional services and characteristics to the BLE server, expanding its capabilities.
 
-The Raspberry Pi's LibCamera library is deployed to handle raw camera feed processing. It stores images in the YUV420 format in the frame buffer, with the Y plane containing luminance data and the UV planes containing chrominance information. The system enhances performance by directly accessing the Y plane for the grayscale data necessary for laser tracking, thereby reducing computational overhead and achieving lower latency.
+The Raspberry Pi's LibCamera library is used to handle raw camera feed processing. It stores images in the YUV420 format in the frame buffer, with the Y plane containing luminance data and the UV planes containing chrominance information. The system enhances performance by directly accessing the Y plane for the grayscale data necessary for laser tracking, thereby reducing computational overhead and achieving lower latency.
 
 # 4. Evaluation and Results
 
-The result of this project is demonstrated in the demo video. In this report, we will review some of the key metrcics that are achieved in the current system.
+The outcomes of this project are highlighted in a demo video. Key performance metrics of the current system include:
 
-- **Responsiveness:** Upon optimization, the background subtraction algorithm running on Raspberry Pi holds a generally stable 30 FPS. Based on our observation, occationally background changes, which result in background model rebuilding, can sometime take the frame rate down to 27 to 28 FPS, with the lowest of 25 FPS observed. However, the frame drops are bearly noticable given their rare occuration and short duration.
-- **Accuracy:** Tracking accuracy partially depends on user set up. Since the laser pointer location is representated using pixel location, in the ideal scenario, the screen should occupy the camera's full window. However, tracking accuracy is still great even with a screen occupying 600*500 pixel. In this set up, we are still able to navagate mouse cursor using laser pointer to click the smallest button on the PC such as close and minimize.
-- **Reliability:** A stable BLE connection is also achieved. No disconnect event is observed in our testing. 
-- **Convienience:** To use this system, there is no set up required on the client PC. A user can simply connect to our device like what they do to a bluetooth mouse. 
+- **Responsiveness:** The optimized background subtraction algorithm on the Raspberry Pi generally maintains a stable 30 FPS. Based on our observation, occationally background changes, which result in background model rebuilding, can sometime bring down the frame rate down to 27 to 28 FPS, with a lowest of 25 FPS observed. However, the frame drops are bearly noticable given their rare occuration and short duration.
+- **Accuracy:** Tracking precision is partially influenced by setup. Ideal scenarios involve full-screen camera coverage. However, even with partial coverage (600x500 pixels), the system accurately navigates the cursor, effectively clicking small interface elements like close and minimize buttons.
+- **Reliability:** The system maintains a consistent BLE connection without disconnections during tests.
+- **Convenience:** The client PC requires no setup; users connect to the device similar to pairing a Bluetooth mouse.
 
 
 # 5. Discussion and Conclusions
 
-The system, as implemented, is fully functional and operates effectively for presentational use. The architecture, which comprises a Raspberry Pi camera module, a Raspberry Pi board, and an ESP32, demonstrates the viability of a low-cost, real-time tracking system. The design's success presents a compelling case for further miniaturization and the development of specialized, portable hardware tailored explicitly to enhance user convenience.
+The system has been successfully implemented and is fully operational, proving to be highly effective for presentation purposes. The setup, consisting of a Raspberry Pi camera module, a Raspberry Pi board, and an ESP32, showcases the feasibility of creating a real-time laser tracking system at a low cost. The outcome of this project indicates a potential for making the system even smaller and developing dedicated hardware that could be easier for users to handle and carry around.
 
-A notable limitation, however, is the BLE-induced latency, emerging as the primary bottleneck. The `sendLocation` function's execution time can reach up to 130ms, with an average around 100ms. Consequently, despite the Raspberry Pi's capability to track the laser pointer at 30 frames per second, the cursor location on the client's PC can only be updated around 10 times per second. The real-time requirement of the project precludes the possibility of batching data to reduce transmission frequency.
+A notable limitation, however, is the BLE-induced latency, emerging as the primary bottleneck. The time it takes for the `sendLocation` function to execute can take as long as 130ms, typically averaging around 100ms. This means that although the Raspberry Pi is capable of tracking the laser pointer's location with less than 30ms delay, the actual update rate of the cursor's position on the client's PC is limited to approximately 10 times per second. This limitation is due to BLE-induced latency. And because of the project's real-time nature, it rules out the possibility of batching data to reduce transmission frequency. Looking ahead, optimizing the system may involve creating a custom BLE library specifically for this application. This could potentially decrease latency and increase how often the cursor's position is updated. 
 
-It is also notable that as the mouse control library enables absolute positioning by using HID touchpad interface, Some functions that a mouse can do while a touchpad can't is also impossible. For example, for touch device, there is no "hovering", making the mouse controller unable to perform some actions that can only doable by a mouse. To further improve this, we should consider combining HID mouse and touchpad interface to provide a better user experience.
+Another point to consider is the limitations imposed by the HID touchpad interface used by the mouse control library, which does not support certain functionalities that a mouse does, such as "hovering". This restricts the system from performing certain actions that are exclusive to mouse devices. An area for future enhancement could be to integrate the HID mouse and touchpad interfaces, providing a more comprehensive user experience.
 
-Future optimizations could necessitate the development of a customized BLE library tailored to this application, potentially reducing latency and increasing the frequency of cursor updates. Such enhancements would further refine the responsiveness of the system, pushing it closer to real-time interaction standards expected in professional presentation environments.
+Additionally, the user setup experience could be enhanced by attaching an LED display to the Raspberry Pi, which would provide visual feedback about the system's status and operations. Further improvements like these would enhance the system's promptness, providing a better user experience.
 
 # 6. References
 
