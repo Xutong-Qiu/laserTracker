@@ -14,7 +14,7 @@ using namespace std::placeholders;
 using namespace cv;
 
 
-static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
+static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* mouse_controller){
 	Background bg(BACKGROUND_IMG_NUM);
     
     Mat frame;
@@ -70,10 +70,10 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 			}
 		}
     }else{
-		bg.screen.push_back({300,100});
-		bg.screen.push_back({900,100});
-		bg.screen.push_back({900,600});
-		bg.screen.push_back({300,600});
+		bg.screen.push_back({100,50});
+		bg.screen.push_back({950,50});
+		bg.screen.push_back({950,620});
+		bg.screen.push_back({100,620});
 	}
 
 	cout<<"Screen setup completed! The corner locations are: "<<endl;
@@ -153,7 +153,7 @@ static void event_loop(LibcameraApp &app, SimpleBLE::Peripheral* nano33){
 		//cout<<"sending takes: "<<std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()<<endl;
 		//cout<<(uint16_t)(norm_x*CLIENT_WIDTH)<<" "<<(uint16_t)(norm_y*CLIENT_HEIGHT)<<endl;
         if(cv::waitKey(1) == 'q'){
-			nano33->disconnect();
+			mouse_controller->disconnect();
             break;
         }
 		//app.ShowPreview(completed_request, app.ViewfinderStream());
@@ -172,38 +172,46 @@ int main(int argc, char *argv[])
 
    // Get the list of peripherals found
    std::vector<SimpleBLE::Peripheral> peripherals = adapter.scan_get_results();
-   SimpleBLE::Peripheral* nano33 = NULL;
-   // Print the identifier of each peripheral
+   SimpleBLE::Peripheral* mouse_controller = NULL;
    for (auto& peripheral : peripherals) {     
 		//cout<<peripheral.address()<<peripheral.identifier()<<endl;
 		if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
 			peripheral.connect();
-			nano33 = &peripheral;
+			mouse_controller = &peripheral;
 			break;
 		}
    }
-   if(!nano33){
+   if(!mouse_controller){
 		peripherals = adapter.get_paired_peripherals();
 		 for (auto& peripheral : peripherals) {     
 				//cout<<peripheral.address()<<peripheral.identifier()<<endl;
 			if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
 				peripheral.connect();
-				nano33 = &peripheral;
+				mouse_controller = &peripheral;
 				break;
 			}
 		}
-		if(!nano33){
-			std::cout<<"Not connected!"<<endl;
-			return 0;
+		while(!mouse_controller){
+			adapter.scan_for(5000);
+			cout<<"Waiting for mouse controller..."<<endl;
+			peripherals = adapter.get_paired_peripherals();
+			for (auto& peripheral : peripherals) {     
+					//cout<<peripheral.address()<<peripheral.identifier()<<endl;
+				if(peripheral.address() == "08:D1:F9:26:B5:E6"){//"C7:51:97:E1:67:11" nano33 address
+					peripheral.connect();
+					mouse_controller = &peripheral;
+					break;
+				}
+			}
 		}
    }
-   for(auto& service:nano33->services()){
+   for(auto& service:mouse_controller->services()){
 		if(service.uuid()==SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")){
 			cout<<"found service!"<<endl;
 			for(auto& charc: service.characteristics()){
 				if (charc.uuid() == SimpleBLE::BluetoothUUID("19b10010-e8f2-537e-4f6c-d104768a1214")) {
 					cout << "Found characteristic!" << endl;
-					initSending(nano33, service, charc);
+					initSending(mouse_controller, service, charc);
 					break; 
 				}
 			}
@@ -227,7 +235,7 @@ int main(int argc, char *argv[])
 		if (options->Parse(argc, argv))
 		{
 			options->Print();
-			event_loop(app, nano33);
+			event_loop(app, mouse_controller);
 		}
 	}
 	catch (std::exception const &e)
